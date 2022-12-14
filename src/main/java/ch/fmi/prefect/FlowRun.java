@@ -1,3 +1,29 @@
+/*-
+ * #%L
+ * A SciJava plugin to interact with Prefect Cloud, developed at the FMI Basel.
+ * %%
+ * Copyright (C) 2022 Friedrich Miescher Institute for Biomedical Research (FMI), Basel (Switzerland)
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
+
 package ch.fmi.prefect;
 
 import java.io.IOException;
@@ -23,8 +49,8 @@ import ch.fmi.prefect.config.PrefectOptions;
 @Plugin(type = Command.class, menuPath = "FMI>Prefect>Start Flow Run...")
 public class FlowRun extends DynamicCommand implements Initializable {
 
-	private String FLOWS_SUFFIX="/flows/filter";
-	private String DEPLOYMENTS_SUFFIX="/deployments/filter";
+	private String FLOWS_SUFFIX = "/flows/filter";
+	private String DEPLOYMENTS_SUFFIX = "/deployments/filter";
 
 	Map<String, String> deployment_ids;
 
@@ -50,7 +76,8 @@ public class FlowRun extends DynamicCommand implements Initializable {
 
 	@Override
 	public void initialize() {
-		PrefectOptions prefectOptions = optionsService.getOptions(PrefectOptions.class);
+		PrefectOptions prefectOptions = optionsService.getOptions(
+			PrefectOptions.class);
 		Map<String, String> flows = new HashMap<>();
 		deployment_ids = new HashMap<>();
 		// Get list of existing deployments
@@ -58,7 +85,7 @@ public class FlowRun extends DynamicCommand implements Initializable {
 			String flows_url = prefectOptions.getApiURL(FLOWS_SUFFIX);
 			logger.debug(flows_url);
 			String flows_response = RequestUtils.httpPostRequest(client, flows_url,
-					prefectOptions.getApiKey(), logger);
+				prefectOptions.getApiKey(), logger);
 			logger.debug(flows_response);
 			JSONArray flows_array = new JSONArray(flows_response);
 			for (int i = 0; i < flows_array.length(); i++) {
@@ -66,19 +93,22 @@ public class FlowRun extends DynamicCommand implements Initializable {
 				flows.put(flow.getString("id"), flow.getString("name"));
 			}
 			String deployments_response = RequestUtils.httpPostRequest(client,
-					prefectOptions.getApiURL(DEPLOYMENTS_SUFFIX), prefectOptions.getApiKey(), logger);
+				prefectOptions.getApiURL(DEPLOYMENTS_SUFFIX), prefectOptions
+					.getApiKey(), logger);
 			logger.debug(deployments_response);
 			JSONArray deployments_array = new JSONArray(deployments_response);
 			for (int i = 0; i < deployments_array.length(); i++) {
 				JSONObject deployment = deployments_array.getJSONObject(i);
-				deployment_ids.put(flows.get(deployment.getString("flow_id")) + ": " + deployment.getString("name"),
-						deployment.getString("id"));
+				deployment_ids.put(flows.get(deployment.getString("flow_id")) + ": " +
+					deployment.getString("name"), deployment.getString("id"));
 			}
 
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			logger.error(e);
 		}
-		MutableModuleItem<String> deploymentInput = getInfo().getMutableInput("deployment", String.class);
+		MutableModuleItem<String> deploymentInput = getInfo().getMutableInput(
+			"deployment", String.class);
 		deploymentInput.setChoices(new ArrayList<>(deployment_ids.keySet()));
 	}
 

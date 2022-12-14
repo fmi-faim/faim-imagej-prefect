@@ -61,8 +61,8 @@ public class PrefectOptions extends OptionsPlugin {
 	private String workspaceID;
 
 	private static final String BASE_URL = "https://api.prefect.cloud/api";
-	private static final String ACCOUNTS_URL = BASE_URL+"/me/accounts";
-	private static final String WORKSPACES_URL = BASE_URL+"/me/workspaces";
+	private static final String ACCOUNTS_URL = BASE_URL + "/me/accounts";
+	private static final String WORKSPACES_URL = BASE_URL + "/me/workspaces";
 
 	public String getApiKey() {
 		return apiKey;
@@ -77,7 +77,8 @@ public class PrefectOptions extends OptionsPlugin {
 	}
 
 	public String getCommonURL() {
-		return BASE_URL + "/accounts/" + getAccountID() + "/workspaces/" + getWorkspaceID();
+		return BASE_URL + "/accounts/" + getAccountID() + "/workspaces/" +
+			getWorkspaceID();
 	}
 
 	public String getApiURL(String suffix) {
@@ -89,15 +90,21 @@ public class PrefectOptions extends OptionsPlugin {
 		logger.info("Trying to retrieve account and workspace ID.");
 		// Set accountID and workspaceID
 		try (CloseableHttpClient client = RequestUtils.getClient()) {
-			String accoutsJsonArrayString=RequestUtils.httpGetRequest(client, ACCOUNTS_URL, apiKey, logger);
-			accountID = new JSONArray(accoutsJsonArrayString).getJSONObject(0).getString("account_id");
+			String accoutsJsonArrayString = RequestUtils.httpGetRequest(client,
+				ACCOUNTS_URL, apiKey, logger);
+			accountID = new JSONArray(accoutsJsonArrayString).getJSONObject(0)
+				.getString("account_id");
 
-			String workspacesJsonArrayString=RequestUtils.httpGetRequest(client, WORKSPACES_URL, apiKey, logger);
-			workspaceID = new JSONArray(workspacesJsonArrayString).getJSONObject(0).getString("workspace_id");
-		} catch (IOException e) {
+			String workspacesJsonArrayString = RequestUtils.httpGetRequest(client,
+				WORKSPACES_URL, apiKey, logger);
+			workspaceID = new JSONArray(workspacesJsonArrayString).getJSONObject(0)
+				.getString("workspace_id");
+		}
+		catch (IOException e) {
 			logger.error(e);
 		}
-		logger.info("Successfully retrieved account (" + accountID + ") and workspace (" + workspaceID + ")");
+		logger.info("Successfully retrieved account (" + accountID +
+			") and workspace (" + workspaceID + ")");
 		super.run();
 	}
 }
