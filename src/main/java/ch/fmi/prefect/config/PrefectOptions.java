@@ -28,23 +28,16 @@ package ch.fmi.prefect.config;
 
 import java.io.IOException;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.scijava.log.Logger;
 import org.scijava.menu.MenuConstants;
 import org.scijava.options.OptionsPlugin;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+
+import ch.fmi.prefect.RequestUtils;
 
 /**
  * Runs the Edit::Options::Prefect dialog.
@@ -67,8 +60,9 @@ public class PrefectOptions extends OptionsPlugin {
 	private String accountID;
 	private String workspaceID;
 
-	private static final String ACCOUNTS_URL = "https://api.prefect.cloud/api/me/accounts";
-	private static final String WORKSPACES_URL = "https://api.prefect.cloud/api/me/workspaces";
+	private static final String BASE_URL = "https://api.prefect.cloud/api";
+	private static final String ACCOUNTS_URL = BASE_URL + "/me/accounts";
+	private static final String WORKSPACES_URL = BASE_URL + "/me/workspaces";
 
 	public String getApiKey() {
 		return apiKey;
@@ -82,45 +76,35 @@ public class PrefectOptions extends OptionsPlugin {
 		return workspaceID;
 	}
 
+	public String getCommonURL() {
+		return BASE_URL + "/accounts/" + getAccountID() + "/workspaces/" +
+			getWorkspaceID();
+	}
+
+	public String getApiURL(String suffix) {
+		return getCommonURL() + suffix;
+	}
+
 	@Override
 	public void run() {
 		logger.info("Trying to retrieve account and workspace ID.");
 		// Set accountID and workspaceID
-		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-		String proxyHost = System.getProperty("https.proxyHost");
-		if (proxyHost != null && proxyHost != "") {
-			clientBuilder.setProxy(new HttpHost(proxyHost,
-												Integer.parseInt(System.getProperty("https.proxyPort")),
-												HttpHost.DEFAULT_SCHEME_NAME)
-												);
+		try (CloseableHttpClient client = RequestUtils.getClient()) {
+			String accoutsJsonArrayString = RequestUtils.httpGetRequest(client,
+				ACCOUNTS_URL, apiKey, logger);
+			accountID = new JSONArray(accoutsJsonArrayString).getJSONObject(0)
+				.getString("account_id");
+
+			String workspacesJsonArrayString = RequestUtils.httpGetRequest(client,
+				WORKSPACES_URL, apiKey, logger);
+			workspaceID = new JSONArray(workspacesJsonArrayString).getJSONObject(0)
+				.getString("workspace_id");
 		}
-		try (CloseableHttpClient client = clientBuilder.build()) {
-			HttpGet accountQuery = new HttpGet(ACCOUNTS_URL);
-			accountQuery.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey);
-			try (CloseableHttpResponse response = client.execute(accountQuery)) {
-				HttpEntity entity = response.getEntity();
-				String jsonArrayString = EntityUtils.toString(entity);
-				JSONArray jsonArray = new JSONArray(jsonArrayString);
-				JSONObject firstEntry = jsonArray.getJSONObject(0);
-				accountID = firstEntry.getString("account_id");
-				EntityUtils.consume(entity);
-			}
-			HttpGet workspaceQuery = new HttpGet(WORKSPACES_URL);
-			workspaceQuery.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey);
-			try (CloseableHttpResponse response = client.execute(workspaceQuery)) {
-				HttpEntity entity = response.getEntity();
-				String jsonArrayString = EntityUtils.toString(entity);
-				JSONArray jsonArray = new JSONArray(jsonArrayString);
-				JSONObject firstEntry = jsonArray.getJSONObject(0);
-				workspaceID = firstEntry.getString("workspace_id");
-				EntityUtils.consume(entity);
-			}			
-		} catch (ClientProtocolException e) {
-			logger.error(e);
-		} catch (IOException e) {
+		catch (IOException e) {
 			logger.error(e);
 		}
-		logger.info("Successfully retrieved account (" + accountID + ") and workspace (" + workspaceID + ")");
+		logger.info("Successfully retrieved account (" + accountID +
+			") and workspace (" + workspaceID + ")");
 		super.run();
 	}
 }
