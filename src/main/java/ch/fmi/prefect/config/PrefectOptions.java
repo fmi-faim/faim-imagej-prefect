@@ -2,7 +2,7 @@
  * #%L
  * A SciJava plugin to interact with Prefect Cloud, developed at the FMI Basel.
  * %%
- * Copyright (C) 2022 Friedrich Miescher Institute for Biomedical Research (FMI), Basel (Switzerland)
+ * Copyright (C) 2022 - 2023 Friedrich Miescher Institute for Biomedical Research (FMI), Basel (Switzerland)
  * %%
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
