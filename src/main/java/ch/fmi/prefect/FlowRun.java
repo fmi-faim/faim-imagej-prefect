@@ -92,11 +92,20 @@ public final class FlowRun extends DynamicCommand implements Initializable {
 				JSONObject flow = flows_array.getJSONObject(i);
 				flows.put(flow.getString("id"), flow.getString("name"));
 			}
+			// filter by tag(s)
+			JSONObject request_body = null;
+			if (prefectOptions.getTags().length > 0) {
+				request_body = new JSONObject().put("deployments", new JSONObject().put("tags",
+						new JSONObject().put("all_", new JSONArray().putAll(prefectOptions.getTags()))));
+			}
 			String deployments_response = RequestUtils.httpPostRequest(client,
 				prefectOptions.getApiURL(DEPLOYMENTS_SUFFIX), prefectOptions
-					.getApiKey(), logger);
+					.getApiKey(), request_body, logger);
 			logger.debug(deployments_response);
 			JSONArray deployments_array = new JSONArray(deployments_response);
+			if (deployments_array.length() == 0) {
+				cancel("No deployments found matching the configured tags. Unable to start any flow run.");
+			}
 			for (int i = 0; i < deployments_array.length(); i++) {
 				JSONObject deployment = deployments_array.getJSONObject(i);
 				deployment_ids.put(flows.get(deployment.getString("flow_id")) + ": " +

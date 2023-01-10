@@ -61,6 +61,9 @@ public final class PrefectOptions extends OptionsPlugin {
 	@Parameter(label = "Prefect API Key")
 	private String apiKey;
 
+	@Parameter(label = "Filter deployments by tag(s)", required = false)
+	private String tags;
+
 	private static final String BASE_URL = "https://api.prefect.cloud/api";
 	private static final String ACCOUNTS_URL = BASE_URL + "/me/accounts";
 	private static final String WORKSPACES_URL = BASE_URL + "/me/workspaces";
@@ -70,6 +73,11 @@ public final class PrefectOptions extends OptionsPlugin {
 
 	public String getApiKey() {
 		return apiKey;
+	}
+
+	public String[] getTags() {
+		// NB: adding ',' to avoid getting empty string when splitting empty string
+		return (tags+",").split(",");
 	}
 
 	public String getAccountID() {
