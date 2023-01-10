@@ -50,7 +50,7 @@ import ch.fmi.prefect.RequestUtils;
 				mnemonic = MenuConstants.EDIT_MNEMONIC),
 		@Menu(label = "Options", mnemonic = 'o'),
 		@Menu(label = "Prefect...", weight = 100, mnemonic = 'p') })
-public class PrefectOptions extends OptionsPlugin {
+public final class PrefectOptions extends OptionsPlugin {
 
 	@Parameter
 	private Logger logger;
@@ -107,8 +107,7 @@ public class PrefectOptions extends OptionsPlugin {
 			prefService.put(getClass(), WORKSPACE_ID, workspaceID);
 			logger.info("Successfully retrieved account (" + accountID +
 					") and workspace (" + workspaceID + ")");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			logger.error(e);
 		}
 		super.run();

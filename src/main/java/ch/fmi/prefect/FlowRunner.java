@@ -46,7 +46,7 @@ import org.scijava.plugin.Parameter;
 
 import ch.fmi.prefect.config.PrefectOptions;
 
-public class FlowRunner extends DynamicCommand implements Initializable {
+public final class FlowRunner extends DynamicCommand implements Initializable {
 
 	private String DEPLOYMENTS_API = "/deployments/";
 	private String CREATE_API = "/create_flow_run";
@@ -91,8 +91,7 @@ public class FlowRunner extends DynamicCommand implements Initializable {
 			String work_queue_name = response.getString("work_queue_name");
 			logger.info("Successfully created flow run '" + flow_run_name +
 				"' on work queue '" + work_queue_name + "'.");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			logger.error("Creating flow run failed.", e);
 		}
 	}
@@ -121,14 +120,10 @@ public class FlowRunner extends DynamicCommand implements Initializable {
 			parameter_openapi_schema = deployment.getJSONObject(
 				"parameter_openapi_schema");
 			optional_defaults = deployment.getJSONObject("parameters");
-			// TODO respect deployment-specific default parameters (in 'parameters'
-			// JSON object)
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			logger.error("Initialization failed.", e);
 			return;
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			logger.error("Initialization failed.", e);
 			return;
 		}
@@ -169,8 +164,7 @@ public class FlowRunner extends DynamicCommand implements Initializable {
 				default:
 					clazz = (Class<T>) String.class;
 			}
-		}
-		else {
+		} else {
 			// type is null, so we look for enum, allOf, anyOf.
 			clazz = (Class<T>) String.class; // fallback
 		}
@@ -178,7 +172,6 @@ public class FlowRunner extends DynamicCommand implements Initializable {
 		String defaultValue = optional_default != null ? optional_default : json
 			.optString("default", null);
 
-		// TODO also respect parameters
 		logger.info("  Default: " + defaultValue);
 
 		MutableModuleItem<T> moduleItem = new DefaultMutableModuleItem<>(this, name,
@@ -211,8 +204,7 @@ public class FlowRunner extends DynamicCommand implements Initializable {
 				}
 			}
 			return list;
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			logger.error(e);
 			return null;
 		}

@@ -43,7 +43,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.scijava.log.Logger;
 
-public class RequestUtils {
+public final class RequestUtils {
 
 	private RequestUtils() {
 		// prevent instantiation of static utility class
@@ -70,8 +70,7 @@ public class RequestUtils {
 			HttpEntity entity = response.getEntity();
 			result = EntityUtils.toString(entity);
 			EntityUtils.consume(entity);
-		}
-		catch (ClientProtocolException e) {
+		} catch (ClientProtocolException e) {
 			logger.error(e);
 		}
 		return result;

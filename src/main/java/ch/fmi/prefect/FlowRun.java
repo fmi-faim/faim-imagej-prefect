@@ -47,12 +47,12 @@ import org.scijava.plugin.Plugin;
 import ch.fmi.prefect.config.PrefectOptions;
 
 @Plugin(type = Command.class, menuPath = "FMI>Prefect>Start Flow Run...")
-public class FlowRun extends DynamicCommand implements Initializable {
+public final class FlowRun extends DynamicCommand implements Initializable {
 
 	private String FLOWS_SUFFIX = "/flows/filter";
 	private String DEPLOYMENTS_SUFFIX = "/deployments/filter";
 
-	Map<String, String> deployment_ids;
+	private Map<String, String> deployment_ids;
 
 	@Parameter
 	private CommandService commandService;
@@ -103,8 +103,7 @@ public class FlowRun extends DynamicCommand implements Initializable {
 					deployment.getString("name"), deployment.getString("id"));
 			}
 
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			logger.error(e);
 		}
 		MutableModuleItem<String> deploymentInput = getInfo().getMutableInput(
