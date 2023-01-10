@@ -11,7 +11,7 @@
 
 	<groupId>ch.fmi</groupId>
 	<artifactId>faim-imagej-prefect</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 
 	<name>ImageJ Prefect Cloud Integration</name>
 	<description>A SciJava plugin to interact with Prefect Cloud, developed at the FMI Basel.</description>
