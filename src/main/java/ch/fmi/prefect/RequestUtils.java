@@ -86,17 +86,18 @@ public final class RequestUtils {
 	public static String httpPostRequest(CloseableHttpClient client, String url,
 		String apiKey, Logger logger) throws IOException
 	{
-		HttpPost post = new HttpPost(url);
-		return httpRequest(client, post, apiKey, logger);
+		return httpPostRequest(client, url, apiKey, null, logger);
 	}
 
 	public static String httpPostRequest(CloseableHttpClient client, String url,
 		String apiKey, JSONObject parameters, Logger logger) throws IOException
 	{
 		HttpPost post = new HttpPost(url);
-		logger.debug(parameters.toString());
-		post.setEntity(new StringEntity(parameters.toString()));
-		post.setHeader("Content-type", "application/json");
+		if (parameters != null) {
+			logger.debug(parameters.toString());
+			post.setEntity(new StringEntity(parameters.toString()));
+			post.setHeader("Content-type", "application/json");
+		}
 		return httpRequest(client, post, apiKey, logger);
 	}
 }
