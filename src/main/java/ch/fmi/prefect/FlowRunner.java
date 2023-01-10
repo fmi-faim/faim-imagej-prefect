@@ -43,13 +43,17 @@ import org.scijava.module.DefaultMutableModuleItem;
 import org.scijava.module.MutableModuleItem;
 import org.scijava.options.OptionsService;
 import org.scijava.plugin.Parameter;
+import org.scijava.util.POM;
 
 import ch.fmi.prefect.config.PrefectOptions;
+import com.oblac.nomen.Nomen;
 
 public final class FlowRunner extends DynamicCommand implements Initializable {
 
-	private String DEPLOYMENTS_API = "/deployments/";
-	private String CREATE_API = "/create_flow_run";
+	private static final String DEPLOYMENTS_API = "/deployments/";
+	private static final String CREATE_API = "/create_flow_run";
+	private static final String PLUGIN_PREFIX = "fip-";
+
 	private List<String> prefectInputs = new ArrayList<>();
 
 	@Parameter
@@ -68,14 +72,26 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 	public void run() {
 		JSONObject inputs = new JSONObject();
 		logger.info("Run deployment " + deploymentID +
-			"with the following inputs:");
+			" with the following inputs:");
 		for (String input_name : prefectInputs) {
 			inputs.put(input_name, getInput(input_name));
 			logger.info(input_name + ": " + inputs.get(input_name));
 		}
 		JSONObject parameters = new JSONObject();
 		parameters.put("parameters", inputs);
+		parameters.put("state", stateScheduledNow());
+		parameters.put("name", generateFlowRunName());
 		logger.debug(parameters.toString());
+
+//		{
+//			"state": {
+//			    "type": "SCHEDULED",
+//			    "state_details": {
+//			      "scheduled_time": "now"
+//			    }
+//			  },
+//			"parameters": {}
+//		}
 
 		PrefectOptions prefectOptions = optionsService.getOptions(
 			PrefectOptions.class);
@@ -198,7 +214,7 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 					JSONArray enum_object = anyOf.getJSONObject(i).optJSONArray("enum");
 					if (enum_object != null) {
 						for (int j = 0; j < enum_object.length(); j++) {
-							list.add(convertService.convert(enum_object.getString(j), clazz));
+							list.add(convertService.convert(enum_object.get(j), clazz));
 						}
 					}
 				}
@@ -208,6 +224,19 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 			logger.error(e);
 			return null;
 		}
+	}
+
+	private String generateFlowRunName() {
+		// TODO also include username?
+		return Nomen.est().literal(getPluginVersion()).superb().noun().withSeparator("-").get();
+	}
+
+	private String getPluginVersion() {
+		return PLUGIN_PREFIX + POM.getPOM(getClass()).getVersion();
+	}
+
+	private JSONObject stateScheduledNow() {
+		return new JSONObject().put("type", "SCHEDULED").put("state_details", new JSONObject().put("scheduled_time", "now"));
 	}
 
 }
