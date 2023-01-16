@@ -1,0 +1,24 @@
+{
+  "definitions":{
+    "MyEnum":{
+      "enum":[
+        1,
+        2
+      ],
+      "title":"MyEnum",
+      "description":"An enumeration."
+    },
+    "Choices":{
+      "enum":[
+        "gmicro",
+        "ggiorget",
+        "gchao",
+        "gfriedri",
+        "gliberal",
+        "gluthi"
+      ],
+      "title":"Choices",
+      "description":"An enumeration."
+    }
+  }
+}

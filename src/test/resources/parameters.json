@@ -1,0 +1,11 @@
+{
+  "parameters":{
+    "path":"/temp",
+    "boolean":true,
+    "literal":42,
+    "pathlist":[
+      "/a/",
+      "/b"
+    ]
+  }
+}

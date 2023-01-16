@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.oblac.nomen.Nomen;
 
@@ -146,6 +147,12 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 		}
 		JSONObject properties = parameter_openapi_schema.getJSONObject(
 			"properties");
+		// TODO iterate in order of 'position'
+//		properties.toMap().entrySet().stream()
+//				.sorted((e1, e2) -> Integer.valueOf(((JSONObject) e1).optInt("position", 0))
+//						.compareTo(Integer.valueOf(((JSONObject) e2).optInt("position", 0)))).forEachOrdered(e -> logger.info(e.getKey()));
+		// ^^^
+
 		for (String name : JSONObject.getNames(properties)) {
 			this.addInput(getModuleItem(name, properties.getJSONObject(name),
 				optional_defaults.optString(name, null)));
@@ -154,37 +161,13 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 		logger.info(properties);
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> MutableModuleItem<T> getModuleItem(String name, JSONObject json,
 		String optional_default)
 	{
-		Class<T> clazz;
 		logger.info("Name: " + name);
 		String type = json.optString("type", null);
 		logger.info("  Type: " + type);
-		if (type != null) {
-			switch (type) {
-				case "number":
-					clazz = (Class<T>) Double.class;
-					break;
-				case "integer":
-					clazz = (Class<T>) Integer.class;
-					break;
-				case "boolean":
-					clazz = (Class<T>) Boolean.class;
-					break;
-				case "string":
-					if ("path".equals(json.optString("format"))) {
-						clazz = (Class<T>) File.class;
-						break;
-					}
-				default:
-					clazz = (Class<T>) String.class;
-			}
-		} else {
-			// type is null, so we look for enum, allOf, anyOf.
-			clazz = (Class<T>) String.class; // fallback
-		}
+		Class<T> clazz = getWidgetType(type, json);
 
 		String defaultValue = optional_default != null ? optional_default : json
 			.optString("default", null);
@@ -202,6 +185,38 @@ public final class FlowRunner extends DynamicCommand implements Initializable {
 		logger.info("  anyOf: " + json.optJSONArray("anyOf"));
 		logger.info("  ==> " + clazz);
 		return moduleItem;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Class<T> getWidgetType(String type, JSONObject json) {
+		if (type != null) {
+			switch (type) {
+			case "array":
+				// special-casing lists of path-like objects => FileListWidget 
+				JSONObject items = json.getJSONObject("items");
+				if (items.optString("type").equals("string") && items.optString("format").equals("path")) {
+					return (Class<T>) File[].class;
+				}
+				// fallback to String[]
+				// TODO improve once there's a usable List<?> widget in SciJava
+				return (Class<T>) String[].class;
+			case "number":
+				return (Class<T>) Double.class;
+			case "integer":
+				return (Class<T>) Integer.class;
+			case "boolean":
+				return (Class<T>) Boolean.class;
+			case "string":
+				if ("path".equals(json.optString("format"))) {
+					return (Class<T>) File.class;
+				}
+			default:
+				return (Class<T>) String.class;
+			}
+		} else {
+			// type is null, so we look for enum, allOf, anyOf.
+			return (Class<T>) String.class; // fallback
+		}
 	}
 
 	private <T> List<? extends T> getChoices(String name, JSONObject json,
